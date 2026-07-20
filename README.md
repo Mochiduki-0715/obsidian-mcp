@@ -69,6 +69,3 @@ OBSIDIAN_VAULT_PATH = "/path/to/your/vault"
 - 削除は物理削除ではなく Obsidian 標準の `.trash/` フォルダへの移動です
 - `create_note` は既存ノートを黙って上書きしません(明示フラグが必要)
 
-## License
-
-MIT
