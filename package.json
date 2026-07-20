@@ -1,0 +1,41 @@
+{
+  "name": "obsidian-mcp",
+  "version": "0.1.0",
+  "description": "MCP server exposing an Obsidian vault to AI agents (Claude Code, Codex)",
+  "license": "MIT",
+  "author": "Mochiduki-0715",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mochiduki-0715/obsidian-mcp.git"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "obsidian",
+    "claude-code",
+    "codex",
+    "ai-agent"
+  ],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "bin": {
+    "obsidian-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "gray-matter": "^4.0.3",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "typescript": "^7.0.2"
+  }
+}
