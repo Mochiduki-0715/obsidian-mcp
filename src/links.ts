@@ -28,6 +28,15 @@ function normalizeTarget(t: string): string {
   return t.trim().toLowerCase();
 }
 
+/** Markdown link targets are URL-encoded; fall back to the raw text if decoding fails. */
+function decodeMdTarget(target: string): string {
+  try {
+    return decodeURIComponent(target);
+  } catch {
+    return target;
+  }
+}
+
 /** The set of link-target spellings that resolve to a given note path. */
 function targetSet(noExt: string, base: string): Set<string> {
   return new Set([noExt, base, noExt + ".md", base + ".md"].map((t) => t.toLowerCase()));
@@ -69,10 +78,7 @@ export async function updateLinks(oldRel: string, newRel: string): Promise<{ upd
     });
 
     updated = updated.replace(mdLinkRe(), (whole, open: string, target: string, close: string) => {
-      let decoded = target;
-      try {
-        decoded = decodeURIComponent(target);
-      } catch {}
+      const decoded = decodeMdTarget(target);
       if (!oldTargets.has(decoded.toLowerCase()) && !oldTargets.has(stripMd(decoded).toLowerCase())) {
         return whole;
       }
@@ -105,29 +111,29 @@ export async function findBacklinks(relPath: string): Promise<Backlink[]> {
   const abs = resolveNotePath(relPath);
   if (!(await exists(abs))) throw new Error(`Note not found: ${toRelPath(abs)}`);
   const rel = toRelPath(abs);
+  const selfNorm = rel.toLowerCase();
   const noExt = stripMd(rel);
   const base = path.basename(noExt);
   const targets = targetSet(noExt, base);
 
   const results: Backlink[] = [];
+  const wikiRe = wikiLinkRe();
+  const mdRe = mdLinkRe();
 
   await walk(vaultRoot(), async (fileAbs) => {
     const fileRel = toRelPath(fileAbs);
-    if (fileRel === rel) return;
+    if (fileRel.toLowerCase() === selfNorm) return;
     const raw = await fs.readFile(fileAbs, "utf-8");
     const lines = raw.split("\n");
 
     lines.forEach((line, idx) => {
-      for (const m of line.matchAll(wikiLinkRe())) {
+      for (const m of line.matchAll(wikiRe)) {
         if (targets.has(normalizeTarget(m[1]))) {
           results.push({ path: fileRel, line: idx + 1, type: "wikilink" });
         }
       }
-      for (const m of line.matchAll(mdLinkRe())) {
-        let decoded = m[2];
-        try {
-          decoded = decodeURIComponent(m[2]);
-        } catch {}
+      for (const m of line.matchAll(mdRe)) {
+        const decoded = decodeMdTarget(m[2]);
         if (targets.has(decoded.toLowerCase()) || targets.has(stripMd(decoded).toLowerCase())) {
           results.push({ path: fileRel, line: idx + 1, type: "markdown" });
         }
