@@ -177,8 +177,8 @@ server.registerTool(
   },
   async ({ path }) => {
     try {
-      const backlinks = await findBacklinks(path);
       const trashedTo = await trashNote(path);
+      const backlinks = await findBacklinks(path);
       const result: Record<string, unknown> = { trashedTo };
       if (backlinks.length > 0) {
         result.warning = `Still linked from ${backlinks.length} location(s)`;

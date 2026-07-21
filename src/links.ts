@@ -7,9 +7,13 @@ import { vaultRoot, walk, toRelPath, resolveNotePath } from "./vault.js";
  * delimiter may be escaped as `\|` (Obsidian escapes it this way inside
  * Markdown table cells, where a bare `|` would split the cell). Target and
  * heading exclude backslash so the escape isn't swallowed into the target.
+ * The delimiter and alias text are wrapped in one non-capturing group so
+ * they only capture together — a stray backslash with no following `|`
+ * (not a real escape) fails the match entirely instead of silently eating
+ * into the alias text.
  */
 function wikiLinkRe(): RegExp {
-  return /\[\[([^\[\]|#\\]+)(#[^\[\]|\\]*)?(\\?\|)?([^\[\]]*)?\]\]/g;
+  return /\[\[([^\[\]|#\\]+)(#[^\[\]|\\]*)?(?:(\\?\|)([^\[\]]*))?\]\]/g;
 }
 
 function mdLinkRe(): RegExp {
@@ -108,6 +112,7 @@ export async function findBacklinks(relPath: string): Promise<Backlink[]> {
 
   await walk(vaultRoot(), async (fileAbs) => {
     const fileRel = toRelPath(fileAbs);
+    if (fileRel === rel) return;
     const raw = await fs.readFile(fileAbs, "utf-8");
     const lines = raw.split("\n");
 
