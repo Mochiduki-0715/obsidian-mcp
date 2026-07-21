@@ -14,7 +14,7 @@ import {
   writeNote,
 } from "./vault.js";
 import { searchNotes } from "./search.js";
-import { updateLinks } from "./links.js";
+import { updateLinks, findBacklinks } from "./links.js";
 import { dailyNote } from "./daily.js";
 
 function ok(data: unknown) {
@@ -177,7 +177,32 @@ server.registerTool(
   },
   async ({ path }) => {
     try {
-      return ok({ trashedTo: await trashNote(path) });
+      const backlinks = await findBacklinks(path);
+      const trashedTo = await trashNote(path);
+      const result: Record<string, unknown> = { trashedTo };
+      if (backlinks.length > 0) {
+        result.warning = `Still linked from ${backlinks.length} location(s)`;
+        result.backlinks = backlinks;
+      }
+      return ok(result);
+    } catch (err) {
+      return fail(err);
+    }
+  },
+);
+
+server.registerTool(
+  "backlinks",
+  {
+    description:
+      "Find notes that link to a given note, via [[wikilinks]] (with #heading/|alias) or ](note.md) markdown links.",
+    inputSchema: {
+      path: z.string().describe("Vault-relative note path"),
+    },
+  },
+  async ({ path }) => {
+    try {
+      return ok(await findBacklinks(path));
     } catch (err) {
       return fail(err);
     }

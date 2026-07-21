@@ -57,7 +57,8 @@ OBSIDIAN_VAULT_PATH = "/path/to/your/vault"
 | `edit_note` | Edit by exact string replacement (`old_text` / `new_text`) |
 | `search_notes` | Case-insensitive full-text search, with an optional `tag` filter |
 | `move_note` | Move/rename a note and rewrite `[[wikilinks]]` across the vault |
-| `delete_note` | Move a note to the vault's `.trash/` folder (safe delete) |
+| `delete_note` | Move a note to the vault's `.trash/` folder (safe delete); warns if the note is still linked from elsewhere |
+| `backlinks` | List notes that link to a given note, with file/line/link-type |
 | `daily_note` | Get or create the daily note for today or a given date |
 
 ## Safety
