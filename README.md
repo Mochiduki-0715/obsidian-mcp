@@ -61,6 +61,15 @@ OBSIDIAN_VAULT_PATH = "/path/to/your/vault"
 | `backlinks` | List notes that link to a given note, with file/line/link-type |
 | `daily_note` | Get or create the daily note for today or a given date |
 
+## Testing
+
+```bash
+npm test
+```
+
+Runs the TypeScript build followed by Node's built-in test runner
+(`node --test`) against the compiled `dist/*.test.js` files.
+
 ## Safety
 
 - Every path is resolved inside the vault root; `..` escapes are rejected
