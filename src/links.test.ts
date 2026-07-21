@@ -27,6 +27,22 @@ async function readNote(rel: string): Promise<string> {
   return fs.readFile(path.join(vaultDir, rel), "utf-8");
 }
 
+/** Cross-case path resolution only works on case-insensitive filesystems (macOS, Windows). */
+async function isCaseInsensitiveFs(): Promise<boolean> {
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "obsidian-mcp-fscheck-"));
+  try {
+    await fs.writeFile(path.join(dir, "CaseCheck.tmp"), "");
+    return await fs.access(path.join(dir, "casecheck.tmp")).then(
+      () => true,
+      () => false,
+    );
+  } finally {
+    await fs.rm(dir, { recursive: true, force: true });
+  }
+}
+
+const caseInsensitiveFs = await isCaseInsensitiveFs();
+
 describe("updateLinks", () => {
   test("rewrites an escaped alias inside a table cell, preserving the escape", async () => {
     await writeNote("A.md", "| [[B\\|Bee]] | x |\n");
@@ -90,11 +106,21 @@ describe("findBacklinks", () => {
     );
   });
 
-  test("excludes a self-reference, even when called with a differently-cased path", async () => {
-    await writeNote("Target.md", "[[Target]]\n[[target]]\n");
-    const results = await findBacklinks("target.md");
+  test("excludes a self-reference", async () => {
+    await writeNote("Target.md", "[[Target]]\n");
+    const results = await findBacklinks("Target.md");
     assert.deepEqual(results, []);
   });
+
+  test(
+    "excludes a self-reference when called with a differently-cased path",
+    { skip: !caseInsensitiveFs && "requires a case-insensitive filesystem" },
+    async () => {
+      await writeNote("Target.md", "[[Target]]\n[[target]]\n");
+      const results = await findBacklinks("target.md");
+      assert.deepEqual(results, []);
+    },
+  );
 
   test("throws for a note that does not exist", async () => {
     await assert.rejects(() => findBacklinks("Missing.md"));
