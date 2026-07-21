@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { vaultRoot, walk, toRelPath, resolveNotePath } from "./vault.js";
+import { vaultRoot, walk, toRelPath, resolveNotePath, exists } from "./vault.js";
 
 /**
  * Matches [[wikilinks]] with optional #heading and |alias. The alias
@@ -103,6 +103,7 @@ export interface Backlink {
 
 export async function findBacklinks(relPath: string): Promise<Backlink[]> {
   const abs = resolveNotePath(relPath);
+  if (!(await exists(abs))) throw new Error(`Note not found: ${toRelPath(abs)}`);
   const rel = toRelPath(abs);
   const noExt = stripMd(rel);
   const base = path.basename(noExt);
