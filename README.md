@@ -22,6 +22,7 @@ Configuration is done through environment variables:
 |---|---|---|
 | `OBSIDIAN_VAULT_PATH` | Absolute path to your vault folder | (required) |
 | `OBSIDIAN_DAILY_DIR` | Folder for daily notes, relative to the vault root | `Daily` |
+| `OBSIDIAN_TEMPLATE_DIR` | Folder for templates, relative to the vault root | `Templates` |
 
 ## Registering with agents
 
@@ -60,6 +61,7 @@ OBSIDIAN_VAULT_PATH = "/path/to/your/vault"
 | `delete_note` | Move a note to the vault's `.trash/` folder (safe delete); warns if the note is still linked from elsewhere |
 | `backlinks` | List notes that link to a given note, with file/line/link-type |
 | `daily_note` | Get or create the daily note for today or a given date |
+| `create_from_template` | Create a note from a template in `OBSIDIAN_TEMPLATE_DIR`, substituting `{{date}}`, `{{title}}`, and custom `{{variables}}` |
 
 ## Testing
 

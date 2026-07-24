@@ -24,7 +24,7 @@ export async function dailyNote(date?: string): Promise<{ note: Note; created: b
   return { note: await readNote(rel), created };
 }
 
-function localToday(): string {
+export function localToday(): string {
   const now = new Date();
   const y = now.getFullYear();
   const m = String(now.getMonth() + 1).padStart(2, "0");
