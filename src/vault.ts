@@ -193,6 +193,30 @@ export async function editNote(relPath: string, oldText: string, newText: string
   return replaceAll ? count : 1;
 }
 
+/**
+ * Update a note's YAML frontmatter by key. `set` entries are merged into the
+ * existing frontmatter (added or overwritten); `remove` entries are deleted.
+ * The body is never touched. Works on notes with no existing frontmatter.
+ */
+export async function updateFrontmatter(
+  relPath: string,
+  set?: Record<string, unknown>,
+  remove?: string[],
+): Promise<Record<string, unknown>> {
+  if (!set && !remove) {
+    throw new Error("Provide at least one of: set, remove");
+  }
+  const abs = resolveNotePath(relPath);
+  if (!(await exists(abs))) throw new Error(`Note not found: ${toRelPath(abs)}`);
+  const raw = await fs.readFile(abs, "utf-8");
+  const parsed = matter(raw);
+  const data: Record<string, unknown> = { ...parsed.data, ...set };
+  for (const key of remove ?? []) delete data[key];
+  const updated = matter.stringify(parsed.content, data);
+  await fs.writeFile(abs, updated, "utf-8");
+  return data;
+}
+
 export async function moveNoteFile(fromRel: string, toRel: string): Promise<{ from: string; to: string }> {
   const fromAbs = resolveNotePath(fromRel);
   const toAbs = resolveNotePath(toRel);
