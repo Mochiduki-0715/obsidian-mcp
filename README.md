@@ -61,6 +61,7 @@ OBSIDIAN_VAULT_PATH = "/path/to/your/vault"
 | `delete_note` | Move a note to the vault's `.trash/` folder (safe delete); warns if the note is still linked from elsewhere |
 | `backlinks` | List notes that link to a given note, with file/line/link-type |
 | `daily_note` | Get or create the daily note for today or a given date |
+| `get_outline` | Get a note's heading outline (level/text/line) and line count, skipping code fences |
 
 ## Testing
 
