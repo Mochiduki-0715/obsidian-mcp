@@ -56,7 +56,7 @@ OBSIDIAN_VAULT_PATH = "/path/to/your/vault"
 | `append_note` | Append text; with `heading`, insert at the end of that section |
 | `edit_note` | Edit by exact string replacement (`old_text` / `new_text`) |
 | `update_frontmatter` | Update YAML frontmatter by key: merge `set` values, delete `remove` keys, body untouched |
-| `search_notes` | Case-insensitive full-text search, with an optional `tag` filter |
+| `search_notes` | Case-insensitive full-text search, with optional `tag`, `frontmatter`, and `regex` filters |
 | `move_note` | Move/rename a note and rewrite `[[wikilinks]]` across the vault |
 | `delete_note` | Move a note to the vault's `.trash/` folder (safe delete); warns if the note is still linked from elsewhere |
 | `backlinks` | List notes that link to a given note, with file/line/link-type |
