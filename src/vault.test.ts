@@ -55,6 +55,13 @@ describe("updateFrontmatter", () => {
     assert.equal(await readNote("A.md"), "---\nstatus: todo\n---\nJust body text\n");
   });
 
+  test("preserves an unquoted date field as a plain string instead of expanding it to a timestamp", async () => {
+    await writeNote("A.md", "---\ndate: 2024-01-01\ntags: [a, b]\n---\n\nBody\n");
+    const data = await updateFrontmatter("A.md", { status: "done" });
+    assert.equal(data.date, "2024-01-01");
+    assert.match(await readNote("A.md"), /^---\ndate: 2024-01-01\n/);
+  });
+
   test("throws when neither set nor remove is given", async () => {
     await writeNote("A.md", "Body\n");
     await assert.rejects(() => updateFrontmatter("A.md"));

@@ -1,8 +1,21 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import matter from "gray-matter";
+import yaml from "js-yaml";
 
 const IGNORED_DIRS = new Set([".obsidian", ".trash", ".git", "node_modules"]);
+
+/**
+ * gray-matter's default YAML engine parses date-like scalars (e.g.
+ * `date: 2024-01-01`) into JS `Date` objects, which then re-serialize as a
+ * full ISO timestamp on the next write — silently rewriting a field the
+ * caller never touched. JSON_SCHEMA has no timestamp type, so dates round-trip
+ * as plain strings.
+ */
+const FRONTMATTER_YAML_ENGINE = {
+  parse: (input: string): object => (yaml.safeLoad(input, { schema: yaml.JSON_SCHEMA }) as object) ?? {},
+  stringify: (data: object) => yaml.safeDump(data, { schema: yaml.JSON_SCHEMA }),
+};
 
 export function vaultRoot(): string {
   const root = process.env.OBSIDIAN_VAULT_PATH;
@@ -209,10 +222,10 @@ export async function updateFrontmatter(
   const abs = resolveNotePath(relPath);
   if (!(await exists(abs))) throw new Error(`Note not found: ${toRelPath(abs)}`);
   const raw = await fs.readFile(abs, "utf-8");
-  const parsed = matter(raw);
+  const parsed = matter(raw, { engines: { yaml: FRONTMATTER_YAML_ENGINE } });
   const data: Record<string, unknown> = { ...parsed.data, ...set };
   for (const key of remove ?? []) delete data[key];
-  const updated = matter.stringify(parsed.content, data);
+  const updated = matter.stringify(parsed.content, data, { engines: { yaml: FRONTMATTER_YAML_ENGINE } });
   await fs.writeFile(abs, updated, "utf-8");
   return data;
 }
