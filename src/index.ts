@@ -8,6 +8,7 @@ import { registerSearchTools } from "./tools/search-tools.js";
 import { registerLinksTools } from "./tools/links-tools.js";
 import { registerDailyTools } from "./tools/daily-tools.js";
 import { registerOutlineTools } from "./tools/outline-tools.js";
+import { registerTemplateTools } from "./tools/template-tools.js";
 
 const server = new McpServer({ name: "obsidian-mcp", version: "0.1.0" });
 
@@ -16,6 +17,7 @@ registerSearchTools(server);
 registerLinksTools(server);
 registerDailyTools(server);
 registerOutlineTools(server);
+registerTemplateTools(server);
 
 async function main() {
   const root = vaultRoot();
