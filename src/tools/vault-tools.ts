@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { appendNote, editNote, listNotes, readNote, writeNote } from "../vault.js";
+import { appendNote, editNote, listNotes, readNote, updateFrontmatter, writeNote } from "../vault.js";
 import { ok, fail } from "../tool-helpers.js";
 
 export function registerVaultTools(server: McpServer): void {
@@ -96,6 +96,26 @@ export function registerVaultTools(server: McpServer): void {
     async ({ path, old_text, new_text, replace_all }) => {
       try {
         return ok({ replacements: await editNote(path, old_text, new_text, replace_all ?? false) });
+      } catch (err) {
+        return fail(err);
+      }
+    },
+  );
+
+  server.registerTool(
+    "update_frontmatter",
+    {
+      description:
+        "Update a note's YAML frontmatter by key: merge `set` values (added or overwritten) and delete `remove` keys. The note body is left untouched.",
+      inputSchema: {
+        path: z.string().describe("Vault-relative note path"),
+        set: z.record(z.string(), z.unknown()).optional().describe("Keys to add or overwrite, merged into existing frontmatter"),
+        remove: z.array(z.string()).optional().describe("Keys to delete from frontmatter"),
+      },
+    },
+    async ({ path, set, remove }) => {
+      try {
+        return ok({ frontmatter: await updateFrontmatter(path, set, remove) });
       } catch (err) {
         return fail(err);
       }
