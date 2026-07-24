@@ -60,6 +60,15 @@ describe("createFromTemplate", () => {
     await assert.rejects(() => createFromTemplate("out.md", "missing.md"), /Template not found/);
   });
 
+  test("rejects a template path that escapes the template folder", async () => {
+    await writeFile("Secret/passwords.md", "super secret content\n");
+    await writeFile("Templates/placeholder.md", "placeholder\n");
+    await assert.rejects(
+      () => createFromTemplate("leak.md", "../Secret/passwords.md"),
+      /escapes the template folder/,
+    );
+  });
+
   test("fails without overwrite when the destination already exists", async () => {
     await writeFile("Templates/t.md", "content\n");
     await writeFile("out.md", "existing\n");

@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { exists, resolveNotePath, toRelPath, writeNote } from "./vault.js";
+import { exists, resolveNotePath, toRelPath, vaultRoot, writeNote } from "./vault.js";
 import { localToday } from "./daily.js";
 
 const TEMPLATE_DIR = () => process.env.OBSIDIAN_TEMPLATE_DIR ?? "Templates";
@@ -21,6 +21,10 @@ export async function createFromTemplate(
   overwrite = false,
 ): Promise<string> {
   const templateAbs = resolveNotePath(path.join(TEMPLATE_DIR(), templateRel));
+  const templateDirAbs = path.resolve(vaultRoot(), TEMPLATE_DIR());
+  if (templateAbs !== templateDirAbs && !templateAbs.startsWith(templateDirAbs + path.sep)) {
+    throw new Error(`Template path escapes the template folder: ${templateRel}`);
+  }
   if (!(await exists(templateAbs))) {
     throw new Error(`Template not found: ${toRelPath(templateAbs)}`);
   }
