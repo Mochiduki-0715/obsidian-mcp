@@ -22,6 +22,7 @@ Configuration is done through environment variables:
 |---|---|---|
 | `OBSIDIAN_VAULT_PATH` | Absolute path to your vault folder | (required) |
 | `OBSIDIAN_DAILY_DIR` | Folder for daily notes, relative to the vault root | `Daily` |
+| `OBSIDIAN_TEMPLATE_DIR` | Folder for templates, relative to the vault root | `Templates` |
 
 ## Registering with agents
 
@@ -55,10 +56,23 @@ OBSIDIAN_VAULT_PATH = "/path/to/your/vault"
 | `create_note` | Create a note (pass `overwrite: true` to replace an existing one) |
 | `append_note` | Append text; with `heading`, insert at the end of that section |
 | `edit_note` | Edit by exact string replacement (`old_text` / `new_text`) |
-| `search_notes` | Case-insensitive full-text search, with an optional `tag` filter |
+| `update_frontmatter` | Update YAML frontmatter by key: merge `set` values, delete `remove` keys, body untouched |
+| `search_notes` | Case-insensitive full-text search, with optional `tag`, `frontmatter`, and `regex` filters |
 | `move_note` | Move/rename a note and rewrite `[[wikilinks]]` across the vault |
-| `delete_note` | Move a note to the vault's `.trash/` folder (safe delete) |
+| `delete_note` | Move a note to the vault's `.trash/` folder (safe delete); warns if the note is still linked from elsewhere |
+| `backlinks` | List notes that link to a given note, with file/line/link-type |
 | `daily_note` | Get or create the daily note for today or a given date |
+| `get_outline` | Get a note's heading outline (level/text/line) and line count, skipping code fences |
+| `create_from_template` | Create a note from a template in `OBSIDIAN_TEMPLATE_DIR`, substituting `{{date}}`, `{{title}}`, and custom `{{variables}}` |
+
+## Testing
+
+```bash
+npm test
+```
+
+Runs the TypeScript build followed by Node's built-in test runner
+(`node --test`) against the compiled `dist/*.test.js` files.
 
 ## Safety
 
