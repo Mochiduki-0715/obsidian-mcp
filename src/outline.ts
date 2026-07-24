@@ -1,5 +1,5 @@
 import * as fs from "node:fs/promises";
-import { resolveNotePath, toRelPath } from "./vault.js";
+import { exists, resolveNotePath, toRelPath } from "./vault.js";
 
 export interface OutlineHeading {
   level: number;
@@ -23,18 +23,25 @@ const FENCE_RE = /^\s*(`{3,}|~{3,})/;
  */
 export async function getOutline(relPath: string): Promise<Outline> {
   const abs = resolveNotePath(relPath);
+  if (!(await exists(abs))) throw new Error(`Note not found: ${toRelPath(abs)}`);
   const raw = await fs.readFile(abs, "utf-8");
   const lines = raw.split("\n");
   const headings: OutlineHeading[] = [];
 
-  let inFence = false;
+  // Only a fence marker using the same character (` or ~) as the one that
+  // opened the block can close it — a different marker appearing inside is
+  // just literal fenced content (e.g. a ~~~ example inside a ``` block).
+  let fenceChar: string | null = null;
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    if (FENCE_RE.test(line)) {
-      inFence = !inFence;
+    const fenceMatch = line.match(FENCE_RE);
+    if (fenceMatch) {
+      const char = fenceMatch[1][0];
+      if (fenceChar === null) fenceChar = char;
+      else if (char === fenceChar) fenceChar = null;
       continue;
     }
-    if (inFence) continue;
+    if (fenceChar !== null) continue;
     const m = line.match(HEADING_RE);
     if (m) headings.push({ level: m[1].length, text: m[2], line: i + 1 });
   }

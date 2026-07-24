@@ -50,6 +50,12 @@ describe("getOutline", () => {
     assert.deepEqual(outline.headings, [{ level: 1, text: "Real", line: 4 }]);
   });
 
+  test("a different fence character inside a fence does not close it early", async () => {
+    await writeNote("A.md", "```\n# not a heading\n~~~\n# still not a heading\n```\n# Real\n");
+    const outline = await getOutline("A.md");
+    assert.deepEqual(outline.headings, [{ level: 1, text: "Real", line: 6 }]);
+  });
+
   test("returns no headings for a note with none", async () => {
     await writeNote("A.md", "Just some text.\n");
     const outline = await getOutline("A.md");
@@ -57,7 +63,7 @@ describe("getOutline", () => {
     assert.equal(outline.lineCount, 2);
   });
 
-  test("throws for a note that does not exist", async () => {
-    await assert.rejects(() => getOutline("Missing.md"));
+  test("throws a friendly error for a note that does not exist", async () => {
+    await assert.rejects(() => getOutline("Missing.md"), /Note not found: Missing\.md/);
   });
 });
