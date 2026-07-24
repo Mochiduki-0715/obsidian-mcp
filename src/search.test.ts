@@ -38,6 +38,14 @@ describe("searchNotes regex", () => {
     await assert.rejects(() => searchNotes({ query: "(unclosed", regex: true }), /Invalid regex/);
   });
 
+  test("rejects a pattern vulnerable to catastrophic backtracking", async () => {
+    await writeNote("A.md", "text\n");
+    await assert.rejects(
+      () => searchNotes({ query: "(a+)+$", regex: true }),
+      /catastrophic backtracking/,
+    );
+  });
+
   test("is case-insensitive like plain-text search", async () => {
     await writeNote("A.md", "Hello World\n");
     const results = await searchNotes({ query: "hello", regex: true });

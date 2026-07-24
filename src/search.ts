@@ -1,5 +1,6 @@
 import * as fs from "node:fs/promises";
 import matter from "gray-matter";
+import safeRegex from "safe-regex2";
 import { vaultRoot, walk, toRelPath } from "./vault.js";
 
 export interface SearchMatch {
@@ -36,6 +37,13 @@ export async function searchNotes(opts: SearchOptions): Promise<SearchMatch[]> {
       pattern = new RegExp(query, "i");
     } catch (err) {
       throw new Error(`Invalid regex "${query}": ${err instanceof Error ? err.message : String(err)}`);
+    }
+    // Reject patterns vulnerable to catastrophic backtracking (e.g. `(a+)+$`)
+    // before running them — a single such query can hang the process for
+    // seconds to minutes since JS regex execution can't be interrupted or
+    // timed out mid-match.
+    if (!safeRegex(pattern)) {
+      throw new Error(`Invalid regex "${query}": pattern is vulnerable to catastrophic backtracking`);
     }
   }
 
